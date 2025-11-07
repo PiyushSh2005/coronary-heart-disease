@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Framingham Heart Risk Predictor</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      margin: 0;
+      font-family: "Segoe UI", sans-serif;
+      background: linear-gradient(135deg, #283c86, #45a247);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      width: 90%;
+      max-width: 600px;
+      animation: fadeIn 1.2s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-40px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    h2 {
+      color: white;
+      text-align: center;
+      margin-bottom: 25px;
+    }
+
+    label {
+      color: white;
+      font-weight: bold;
+      display: block;
+      margin: 10px 0 5px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px;
+      border-radius: 10px;
+      border: none;
+      margin-bottom: 10px;
+      background-color: rgba(255, 255, 255, 0.2);
+      color: #fff;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(to right, #00c6ff, #0072ff);
+      color: white;
+      font-size: 1.1em;
+      font-weight: bold;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: 0.3s ease;
+    }
+
+    .btn:hover {
+      transform: scale(1.03);
+      box-shadow: 0 4px 20px rgba(0, 198, 255, 0.4);
+    }
+
+    .result {
+      margin-top: 20px;
+      padding: 15px;
+      text-align: center;
+      font-size: 1.2rem;
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 10px;
+      color: #fff;
+      display: none;
+    }
+
+    .loading {
+      color: white;
+      text-align: center;
+      margin-top: 15px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>🫀 Framingham Heart Disease Predictor</h2>
+    <form id="predict-form">
+      <label>Age</label>
+      <input type="number" id="age" required />
+
+      <label>Sex</label>
+      <select id="sex" required>
+        <option value="1">Male</option>
+        <option value="0">Female</option>
+      </select>
+
+      <label>Total Cholesterol</label>
+      <input type="number" id="chol" required />
+
+      <label>Systolic BP</label>
+      <input type="number" id="sysbp" required />
+
+      <label>Diastolic BP</label>
+      <input type="number" id="diabp" required />
+
+      <label>BMI</label>
+      <input type="number" step="0.1" id="bmi" required />
+
+      <label>Heart Rate</label>
+      <input type="number" id="hr" required />
+
+      <label>Glucose Level</label>
+      <input type="number" id="glucose" required />
+
+      <button type="submit" class="btn">🔍 Predict</button>
+    </form>
+
+    <div class="loading" id="loading">🔄 Predicting...</div>
+    <div class="result" id="result-box"></div>
+  </div>
+
+  <script>
+    document.getElementById("predict-form").addEventListener("submit", function(e) {
+      e.preventDefault();
+
+      const inputData = {
+        age: +document.getElementById("age").value,
+        sex: +document.getElementById("sex").value,
+        chol: +document.getElementById("chol").value,
+        sysbp: +document.getElementById("sysbp").value,
+        diabp: +document.getElementById("diabp").value,
+        bmi: +document.getElementById("bmi").value,
+        heartRate: +document.getElementById("hr").value,
+        glucose: +document.getElementById("glucose").value
+      };
+
+      const resultBox = document.getElementById("result-box");
+      const loading = document.getElementById("loading");
+
+      resultBox.style.display = "none";
+      loading.style.display = "block";
+
+      fetch("/predict", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(inputData)
+      })
+      .then(res => res.json())
+      .then(data => {
+        loading.style.display = "none";
+        resultBox.style.display = "block";
+
+        if (data.prediction === 1) {
+          resultBox.innerHTML = "⚠️ <strong>High Risk</strong> of heart disease in the next 10 years.";
+          resultBox.style.background = "rgba(255, 0, 0, 0.4)";
+        } else {
+          resultBox.innerHTML = "✅ <strong>Low Risk</strong>. Keep up the healthy lifestyle!";
+          resultBox.style.background = "rgba(0, 255, 100, 0.3)";
+        }
+      })
+      .catch(err => {
+        loading.style.display = "none";
+        resultBox.style.display = "block";
+        resultBox.innerHTML = "❌ Prediction failed. Try again.";
+        resultBox.style.background = "rgba(255, 0, 0, 0.3)";
+      });
+    });
+  </script>
+</body>
+</html>
